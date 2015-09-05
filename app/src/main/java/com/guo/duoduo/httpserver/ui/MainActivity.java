@@ -48,7 +48,8 @@ public class MainActivity extends AppCompatActivity
         }
         else
         {
-            hint.setText("在PC的浏览器中输入IP：" + ip + Constant.Config.Web_Root + " " + "回车即可");
+            hint.setText("在PC的浏览器中输入IP：http://" + ip + ":" + Constant.Config.PORT + Constant.Config.Web_Root + " "
+                + "回车即可");
         }
     }
 

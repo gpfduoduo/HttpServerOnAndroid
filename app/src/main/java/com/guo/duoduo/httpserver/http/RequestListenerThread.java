@@ -86,17 +86,6 @@ public class RequestListenerThread extends Thread
                 e.printStackTrace();
                 this.interrupt();
             }
-            finally
-            {
-                try
-                {
-                    serversocket.close();
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 
