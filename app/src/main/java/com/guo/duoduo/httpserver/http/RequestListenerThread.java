@@ -99,8 +99,9 @@ public class RequestListenerThread extends Thread
             //设置 http 参数
             params = new BasicHttpParams();
             params.setIntParameter(CoreConnectionPNames.SOCKET_BUFFER_SIZE, 8 * 1024)
+                    .setIntParameter(CoreConnectionPNames.SO_TIMEOUT, 5 * 1000)
                     .setBooleanParameter(CoreConnectionPNames.STALE_CONNECTION_CHECK,
-                        false)
+                            false)
                     .setBooleanParameter(CoreConnectionPNames.TCP_NODELAY, true)
                     .setParameter(CoreProtocolPNames.ORIGIN_SERVER, "HttpComponents/1.1");
 
