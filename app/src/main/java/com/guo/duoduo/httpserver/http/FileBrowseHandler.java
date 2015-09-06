@@ -2,9 +2,12 @@ package com.guo.duoduo.httpserver.http;
 
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.Locale;
 import java.util.StringTokenizer;
 
 import org.apache.http.HttpEntity;
@@ -12,10 +15,13 @@ import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.entity.ContentProducer;
+import org.apache.http.entity.EntityTemplate;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestHandler;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.guo.duoduo.httpserver.utils.Constant;
@@ -45,7 +51,7 @@ public class FileBrowseHandler implements HttpRequestHandler
 
         Log.d(tag, "http request target = " + target);
 
-        File file = new File(target);
+        final File file = new File(target);
 
         HttpEntity entity = new StringEntity("", Constant.ENCODING);
 
@@ -59,7 +65,7 @@ public class FileBrowseHandler implements HttpRequestHandler
         else if (file.canRead())
         {
             httpResponse.setStatusCode(HttpStatus.SC_OK);
-            if (file.isDirectory())
+            if (file.isDirectory()) //实现文件夹浏览
             {
                 Log.d(tag, " file is directory");
                 String msg = "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; "
@@ -102,11 +108,37 @@ public class FileBrowseHandler implements HttpRequestHandler
                 }
                 msg += "</body></html>";
                 entity = new StringEntity(msg, Constant.ENCODING);
+                httpResponse.setHeader("Content-Type", contentType);
             }
-            else
+            else  //实现文件下载
             {
                 Log.d(tag, " file is real file");
+                String mime = null;
+                int dot = file.getCanonicalPath().lastIndexOf(".");
+                if (dot >= 0)
+                {
+                    mime = (String) Constant.theMimeTypes.get(file.getCanonicalPath()
+                            .substring(dot + 1).toLowerCase(Locale.ENGLISH));
+                    if (TextUtils.isEmpty(mime))
+                        mime = Constant.MIME_DEFAULT_BINARY;
 
+                    long fileLength = file.length();
+                    httpRequest.addHeader("Content-Length", "" + fileLength);
+                    httpResponse.setHeader("Content-Type", mime);
+                    httpResponse.addHeader("Content-Description", "File Transfer");
+                    httpResponse.addHeader("Content-Disposition", "attachment;filename="
+                        + encodeFilename(file));
+                    httpResponse.setHeader("Content-Transfer-Encoding", "binary");
+
+                    entity = new EntityTemplate(new ContentProducer()
+                    {
+                        @Override
+                        public void writeTo(OutputStream outStream) throws IOException
+                        {
+                            write(file, outStream);
+                        }
+                    });
+                }
             }
         }
         else
@@ -115,7 +147,6 @@ public class FileBrowseHandler implements HttpRequestHandler
             httpResponse.setStatusCode(HttpStatus.SC_FORBIDDEN);
         }
 
-        httpResponse.setHeader("Content-Type", contentType);
         httpResponse.setEntity(entity);
     }
 
@@ -138,4 +169,39 @@ public class FileBrowseHandler implements HttpRequestHandler
         return newUri;
     }
 
+    private void write(File inputFile, OutputStream outStream) throws IOException
+    {
+        FileInputStream fis = new FileInputStream(inputFile);
+        try
+        {
+            int count;
+            byte[] buffer = new byte[Constant.BUFFER_LENGTH];
+            while ((count = fis.read(buffer)) != -1)
+            {
+                outStream.write(buffer, 0, count);
+            }
+            outStream.flush();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            throw e;
+        }
+        finally
+        {
+            fis.close();
+            outStream.close();
+        }
+    }
+
+    private String encodeFilename(File file) throws IOException
+    {
+        String filename = URLEncoder.encode(getFilename(file), Constant.ENCODING);
+        return filename.replace("+", "%20");
+    }
+
+    private String getFilename(File file)
+    {
+        return file.isFile() ? file.getName() : file.getName() + ".zip";
+    }
 }

@@ -116,7 +116,6 @@ public class RequestListenerThread extends Thread
 
             //http请求处理程序，HttpFileHandler继承于HttpRequestHandler（http请求处理程序)
             registry.register(Constant.Http.BROWSE, new FileBrowseHandler(webRoot));
-            registry.register(Constant.Http.DOWNLOAD, new FileDownLoadHandler(webRoot));
 
             httpService = new HttpService(httpProcessor,
                 new DefaultConnectionReuseStrategy(), new DefaultHttpResponseFactory());
