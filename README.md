@@ -51,4 +51,4 @@ Airplay中需要实现HttpServer来接受苹果设备作为客户端推送的get
 ![image](https://github.com/gpfduoduo/HttpServerOnAndroid/blob/master/device-2015-09-05-220442.png "手机端效果图")     
 
 PC端浏览器：   
-![image](https://github.com/gpfduoduo/HttpServerOnAndroid/blob/master/http%20core%20browse%20sdcard.PNG "PC端浏览器效果图")   
+![image](https://github.com/gpfduoduo/HttpServerOnAndroid/blob/master/browse%20android%20sdcard%20file%20by%20http.gif "PC端浏览器效果图")   
