@@ -3,6 +3,7 @@ package com.guo.duoduo.httpserver.http;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URLDecoder;
@@ -72,7 +73,14 @@ public class FileBrowseHandler implements HttpRequestHandler
                     + "charset=utf-8\"><title>文件服务</title></head><body><h1>Directory "
                     + target + "</h1><br/>";
 
-                String[] files = file.list();
+                String[] files = file.list(new FilenameFilter()
+                {
+                    @Override
+                    public boolean accept(File file, String s)
+                    {
+                        return !file.isHidden() && !file.getName().startsWith(".");
+                    }
+                });
                 if (files != null)
                 {
                     for (int i = 0; i < files.length; i++)
@@ -110,7 +118,8 @@ public class FileBrowseHandler implements HttpRequestHandler
                 entity = new StringEntity(msg, Constant.ENCODING);
                 httpResponse.setHeader("Content-Type", contentType);
             }
-            else  //实现文件下载
+            else
+            //实现文件下载
             {
                 Log.d(tag, " file is real file");
                 String mime = null;
